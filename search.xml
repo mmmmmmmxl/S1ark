@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="utf-8"?>
+<search>
+  <entry>
+    <title><![CDATA[PIP 批量更新脚本]]></title>
+    <url>%2F2017%2F04%2F01%2F11%2F</url>
+    <content type="text"><![CDATA[PIP是不支持自动批量更新的，但是总得想办法嘛12345import pipfrom subprocess import call for dist in pip.get_installed_distributions(): call("pip install --upgrade " + dist.project_name, shell=True)]]></content>
+      <categories>
+        <category>技术</category>
+      </categories>
+      <tags>
+        <tag>Python</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title><![CDATA[Django拾遗之Signal]]></title>
+    <url>%2F2016%2F09%2F03%2F6%2F</url>
+    <content type="text"><![CDATA[使用Signal之前得明白django signal和异步消息列队(例如celery)的区别. signal是同步处理, 因此通过signal调用大处理量的进程时并不能提高性能. 事实上, 将这些需要大处理量的进程移到signal中被视作是一种不好的习惯.12345678910111213141516171819202122232425262728293031323334353637from django.dispatch import Signal #定义一个person信号，它产生了"weight"和"height"两个参数的接收器person = Signal(providing_args = ['weight','height'])# 发送信号有两种方法,Signal.send和Siganal.send_robust，通常我们使用Signal.send# 他们俩的区别在于send不会捕捉异常，而send_robust会捕捉异常class Person_manage(object): ... def send_person(self,weight,height): #send返回的是一个tuple列表,在绝大多数的时候，sender后面是一个类。 person.send(sender=self.__class__, height=height, weight=weight) # 定义一个方法接收Signaldef my_callback(sender, **kwargs): print("Signal received!")# 连接到Signal的两种方法1.from django.core.signals import request_finished request_finished.connect(my_callback)2.from django.core.signals import request_finished from django.dispatch import receiver @receiver(request_finished) def my_callback(sender, **kwargs): print("Request finished!")# 只接收指定信号的方法from django.db.models.signals import pre_savefrom django.dispatch import receiverfrom myapp.models import MyModel@receiver(pre_save, sender=MyModel)def my_handler(sender, **kwargs): ...]]></content>
+      <categories>
+        <category>技术</category>
+      </categories>
+      <tags>
+        <tag>Django</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title><![CDATA[使用Ajax发生跨域时的解决方法]]></title>
+    <url>%2F2016%2F08%2F23%2F5%2F</url>
+    <content type="text"><![CDATA[关于使用JavaScript发送POST请求的跨域问题现有的JQuery Ajax发送POST请求无法跨域完成在net上找了好久好久，好像都没一个完美的解决方案总结一下net上现有这几种方法： 1.直接用jquery中$.getJSON进行跨域提交优点：有返回值,可直接跨域； 缺点：数据量小； 提交方式：仅get (无$.postJSON) 2.在页面中嵌入一个iframe，把iframe的宽和高设置为0进行跨域提交优点：可直接跨域； 缺点：无返回值(脱离ajax本质)； 提交方式：get/post 3.直接用$.post跨域先提交到本地域名下一个代理程序，通过代理程序向目的域名进行post或get提交，并根据目的域名的返回值通过代理 程序返回给本地页面 优点：有返回值，可直接跨域，可通过 代理程序 统计ip等用户信息，增加安全性； 提交方式：get/post 复杂度：需要前端工程师和后端工程师配合(php/java../工程师) 缺点：需要消耗本地服务器资源，增加ajax等待时间（可忽略） 4.通过配置对方nginx的方式来实现跨域的可能（对方愿意配合的情况下）[采用的解决方法]在location中加入通配符add_header Access-Control-Allow-Origin &quot;*&quot;; 出于安全考虑，建议将通配符*换为需要跨域传输的域名。]]></content>
+      <categories>
+        <category>技术</category>
+      </categories>
+      <tags>
+        <tag>前端</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title><![CDATA[关于密码传输的一些思考]]></title>
+    <url>%2F2016%2F08%2F02%2F4%2F</url>
+    <content type="text"><![CDATA[写登录页面的时候偶然想到密码通过POST传输的时候是明文传输，只需要抓包即可看到用户的信息。 想过JS加密，然后服务端解密，实际上可行性不高。 知乎上有具体的解决办法，但是似乎除了Https外没有其他可靠的办法。 https://www.zhihu.com/question/20060155]]></content>
+      <categories>
+        <category>技术</category>
+      </categories>
+      <tags>
+        <tag>后端</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title><![CDATA[Python排列组合实现]]></title>
+    <url>%2F2016%2F07%2F25%2F2%2F</url>
+    <content type="text"><![CDATA[123456789101112131415161718192021222324252627from itertools import permutationscontent = [ &#123;"group": 123, "content": "a"&#125;, &#123;"group": 0, "content": "+"&#125;, &#123;"group": 445, "content": "b"&#125;, &#123;"group": 0, "content": "="&#125;, &#123;"group": 322, "content": "c"&#125;]change_list = []unchange_list = []for item in content: if item['group'] == 0 : unchange_list.append(item) else: change_list.append(item)list = []for i in permutations(change_list): if i[0]['group'] + i[1]['group'] == i[2]['group']: result = '%s%s%s%s%s' % (i[0]['content'],unchange_list[0]['content'],i[1]['content'],unchange_list[1]['content'],i[2]['content']) list.append(result)print list]]></content>
+      <categories>
+        <category>技术</category>
+      </categories>
+      <tags>
+        <tag>Python</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title><![CDATA[Django用户登录状态原理]]></title>
+    <url>%2F2016%2F06%2F25%2F3%2F</url>
+    <content type="text"><![CDATA[123456789from django.contrib.auth import loginfrom django.contrib.auth.models import Userfrom django.http import HttpResponseRedirectdef testlogin(request,uid=''): user = User() user.id = uid user.backend = 'django.contrib.auth.backends.ModelBackend' login(request,user) return HttpResponseRedirect('/') 用户的身份验证过程： 首先通过 authenticate() 方法对传入的用户名、密码等信息进行验证，如果符合，则返回相应的 user 对象，同时，该方法会对 user 对象加以标注，通过附加 user.backend 属性来记录验证是被哪个配置的 backend 通过的。默认只有一个 backend，是 django.contrib.auth.backends.ModelBackend. login 方法调用 如果上一步身份验证通过，则此方法中对 request.session 中简单的添加两个键值： (1) “_auth_user_id” 这个是 user.id (2) “_auth_user_backend” 这个是 user.backend因此只要给DJango一个user对象和user.id,user.backend就可以实现任意用户不用密码改变登录态]]></content>
+      <categories>
+        <category>技术</category>
+      </categories>
+      <tags>
+        <tag>Django</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title><![CDATA[Django扩展manage.py命令]]></title>
+    <url>%2F2016%2F05%2F15%2F8%2F</url>
+    <content type="text"><![CDATA[Django中扩展manage.py命令我们都用过Django的django-admin.py和manage.py。django-admin.py是一个命令行工具，可以执行一些管理任务，比如创建Django项目。而manage.py是在创建每个Django project时自动添加在项目目录下的，只是对manage.py的一个简单包装，其功能是将Django project放到sys.path目录中，同时设置DJANGO_SETTINGS_MODULE环境变量为当前project的setting.py文件。 django-admin.py调用django.core.management来执行命令:12345#!/usr/bin/env pythonfrom django.core import management if __name__ == "__main__": management.execute_from_command_line() excute_from_command_line()函数会根据命令行参数解析出命令的名称，根据命令名称调用相应的Command执行命令。Command位于各个管理模块的commands模块下面。所谓管理模块，是指在app模块下的名字为management的模块。Django通过django.core.management.find_management_module函数发现”管理模块”: 12345678910111213django.core.management.find_management_module()def find_management_module(app_name): """ Determines the path to the management module for the given app_name, without actually importing the application or the management module. Raises ImportError if the management module cannot be found for any reason. """ parts = app_name.split('.') parts.append('management') parts.reverse() part = parts.pop() path = None 然后通过django.core.management.find_commands函数找到命令类。find_commands函数会在管理模块下查找.py文件，并将.py文件的名称匹配到命令名称: 12345678910111213def find_commands(management_dir): """ Given a path to a management directory, returns a list of all the command names that are available. Returns an empty list if no commands are defined. """ command_dir = os.path.join(management_dir, 'commands') try: return [f[:-3] for f in os.listdir(command_dir) if not f.startswith('_') and f.endswith('.py')] except OSError: return [] 最后，通过django.core.management.load_command_class函数加载该.py文件中的Command类: 12345678def load_command_class(app_name, name): """ Given a command name and an application name, returns the Command class instance. All errors raised by the import process (ImportError, AttributeError) are allowed to propagate. """ module = import_module('%s.management.commands.%s' % (app_name, name)) return module.Command() 在执行命令的时候，会执行相应Command类的handle方法。所有的Command类都应该是django.core.management.base.BaseCommand的直接或间接子类。 原理搞清楚了，扩展manage命令就很容易了。创建一个app并加入到settings的INSTALLED_APPS中，在该app下面创建management.commands模块，并创建hello.py文件: 12345678from django.core.management.base import BaseCommand, CommandErrorfrom django.db import models#from placeholders import *import os class Command(BaseCommand): def handle(self, *args, **options): print 'hello, django!' 就可以使用hello命令了:12$ python manage.py hellohello, django! 那么其实扩展manage.py就只需要在management—-commands目录下新建文件夹并引入basecommands即可。]]></content>
+      <categories>
+        <category>技术</category>
+      </categories>
+      <tags>
+        <tag>Django</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title><![CDATA[Python冒泡排序]]></title>
+    <url>%2F2016%2F03%2F23%2F7%2F</url>
+    <content type="text"><![CDATA[Python冒泡排序的实现（有sort在似乎根本没什么必要？12345array = [1,3,5,4,2]for i in range(len(array))[::-1]: for j in range(i): if array[j] &gt; array[j+1]: array[j],array[j+1] = array[j+1],array[j]]]></content>
+      <categories>
+        <category>技术</category>
+      </categories>
+      <tags>
+        <tag>Python</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title><![CDATA[Django ORM操作]]></title>
+    <url>%2F2016%2F03%2F17%2F9%2F</url>
+    <content type="text"><![CDATA[Django的ORM十分强大，Mark几篇写得不错的： http://blog.sina.com.cn/s/blog_a73687bc0101cygy.html Django数据模型进阶 http://blog.sina.com.cn/s/blog_611f501001015vm8.html Django的数据库操作 https://www.douban.com/note/301166150/ 条件过滤，及多表连接查询、反向查询，某字段的distinct http://my.oschina.net/vincent67/blog/168082 在django中按照时间范围查询数据库]]></content>
+      <categories>
+        <category>技术</category>
+      </categories>
+      <tags>
+        <tag>Django</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title><![CDATA[Python字符串处理]]></title>
+    <url>%2F2016%2F03%2F01%2F10%2F</url>
+    <content type="text"><![CDATA[Python去掉字符串中的空格12345678910s = ' 111 '#去掉左边的空格s.lstrip()&gt;&gt;'111 '#去掉右边的空格s.rstrip()&gt;&gt;' 111'#去掉两边所有空格s.strip()&gt;&gt;'111' 但是上述方法只能去掉两边的空格去中间的空格只能先分割，再加入123s = ' 11 22 33 45543 12 'x = s.split(' ')y = ''.join(x)]]></content>
+      <categories>
+        <category>技术</category>
+      </categories>
+      <tags>
+        <tag>Python</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title><![CDATA[Python各种小特性]]></title>
+    <url>%2F2016%2F02%2F28%2F12%2F</url>
+    <content type="text"><![CDATA[在列表中查找某条记录123456789101112131415L = [randrange(10000) for i in range(1000)]#在列表较大时，建议先将列表转换为集合，再进行查询&gt;&gt;&gt;42 in LFalse0.03286S = set(L)&gt;&gt;&gt;42 in SFalse0.01102#列表是线性查询，而集合是常数查询，所以列表自然比集合满上许多 获取序列迭代的索引和值12345678910111213141516list = ['a', 'b', 'c', 'd', 'e', 'f', 'g']#方法一for i in range(len(list)): print 'index：',i,'element:',list[i]#方法二for i,e in zip(range(len(list)), list): print 'index:',i,'element:',e#方法三(推荐)for i,e in enumerate(list): print 'index:',i,'element:',e#eumerate为惰性加载 在添加字符串的时候尽量用join12345str1 + str2 + str3''.join([str1,str2,str3])#在字符串数量达到100000级别的时候join比+快100倍左右，且这个数值会越来越大。 实现字符串左对齐，右对齐，居中对齐12345'test'.ljust/rjust/center(10,'+')&gt;&gt;&gt;test++++++++++&gt;&gt;&gt;++++++++++test&gt;&gt;&gt;+++++test+++++ 字符串的大小写转换12345678'test test test'.title()&gt;&gt;&gt;'Test Test Test''test test test'.capitalize()&gt;&gt;&gt;'Test test test''test'.upper()&gt;&gt;&gt;'TEST''TEST'.lower()&gt;&gt;&gt;'test' 将两个列表创建字典时的技巧现在有两个列表a,b如下1234567891011121314151617a = [1,2,3,4,5,6,7,8,9,0]b = ['a','b','c','d','e','f','g','h','i','j']# 若要合并两个列表为字典，通常做法是dict(zip(a,b))&gt;&gt;&gt;&#123;(1, 'a'), (2, 'b'), (3, 'c'), (4, 'd'), (5, 'e'), (6, 'f'), (7, 'g'), (8, 'h'), (9, 'i'), (0, 'j')&#125;# 当两列表过大时会出现内存溢出现象，原因是zip函数会预加载两个列表中所有字符串到列表中再进行合并# 更好的解决方式如下import itertoolsitertools.izip(a,b)&gt;&gt;&gt;&#123;0: 'j', 1: 'a', 2: 'b', 3: 'c', 4: 'd', 5: 'e', 6: 'f', 7: 'g', 8: 'h', 9: 'i'&#125;# 通常情况下，使用itertools.izip效率会比zip快两倍左右。并且izip是逐个组合，不会产生内存溢出的现象。]]></content>
+      <categories>
+        <category>技术</category>
+      </categories>
+      <tags>
+        <tag>Python</tag>
+      </tags>
+  </entry>
+</search>
