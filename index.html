@@ -113,7 +113,7 @@
 
 <meta property="og:type" content="website">
 <meta property="og:title" content="Souven1r">
-<meta property="og:url" content="http://yoursite.com/index.html">
+<meta property="og:url" content="http://s1ark.cn/index.html">
 <meta property="og:site_name" content="Souven1r">
 <meta property="og:locale" content="zh-CN">
 <meta name="twitter:card" content="summary">
@@ -124,7 +124,7 @@
 
 
 
-  <link rel="canonical" href="http://yoursite.com/"/>
+  <link rel="canonical" href="http://s1ark.cn/"/>
 
 
 
@@ -318,7 +318,183 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/04/01/11/">
+    <link itemprop="mainEntityOfPage" href="http://s1ark.cn/2018/03/24/13/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="狗子">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Souven1r">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/03/24/13/" itemprop="url">Ubuntu下部署 Nginx + Gunicorn + Django(1)</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-03-24T23:29:00+08:00">2018-03-24</time>
+            
+
+            
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/技术/" itemprop="url" rel="index"><span itemprop="name">技术</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2018/03/24/13/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count valine-comment-count" data-xid="/2018/03/24/13/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h1 id="Nginx"><a href="#Nginx" class="headerlink" title="Nginx"></a>Nginx</h1><h2 id="1-Ubuntu下Nginx安装"><a href="#1-Ubuntu下Nginx安装" class="headerlink" title="1. Ubuntu下Nginx安装"></a>1. Ubuntu下Nginx安装</h2><p>按照正常软件的安装方式，直接通过如下命令进行安装：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ sudo apt-get install nginx</span><br></pre></td></tr></table></figure></p>
+<p>安装完成即可，在/usr/sbin/目录下是nginx命令所在目录，<br>在/etc/nginx/目录下是nginx所有的配置文件，<br>用于配置nginx服务器以及负载均衡等信息 </p>
+<h2 id="2-配置Nginx"><a href="#2-配置Nginx" class="headerlink" title="2. 配置Nginx"></a>2. 配置Nginx</h2><p>查看nginx进程是否启动<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ ps -ef|grep nginx</span><br></pre></td></tr></table></figure></p>
+<p>nginx会自动根据当前主机的CPU的内核数目创建对应的进程数量</p>
+<p>备注：nginx进程在启动的时候，会附带一个守护进程，用于保护正式进程不被异常终止；<br>如果守护进程一旦返现nginx继承被终止了，会自动重启该进程。</p>
+<p>守护进程一般会称为master进程，业务进程被称为worker进程</p>
+<p>nginx是一个功能非常强大的web服务器加反向代理服务器，同时又是邮件服务器等等</p>
+<p>在项目使用中，使用最多的三个核心功能是反向代理、负载均衡和静态服务器</p>
+<p>这三个不同的功能的使用，都跟nginx的配置密切相关，nginx服务器的配置信息主要集中在nginx.conf这个配置文件中，<br>并且所有的可配置选项大致分为以下几个部分</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line">main                                # 全局配置</span><br><span class="line"></span><br><span class="line">events &#123;                            # nginx工作模式配置</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">http &#123;                                # http设置</span><br><span class="line">    ....</span><br><span class="line"></span><br><span class="line">    server &#123;                        # 服务器主机配置</span><br><span class="line">        ....</span><br><span class="line">        location &#123;                    # 路由配置</span><br><span class="line">            ....</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        location path &#123;</span><br><span class="line">            ....</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        location otherpath &#123;</span><br><span class="line">            ....</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    server &#123;</span><br><span class="line">        ....</span><br><span class="line"></span><br><span class="line">        location &#123;</span><br><span class="line">            ....</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    upstream name &#123;                    # 负载均衡配置</span><br><span class="line">        ....</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>如上述配置文件所示，主要由6个部分组成：</p>
+<ol>
+<li>main：用于进行nginx全局信息的配置</li>
+<li>events：用于nginx工作模式的配置</li>
+<li>http：用于进行http协议信息的一些配置</li>
+<li>server：用于进行服务器访问信息的配置</li>
+<li>location：用于进行访问路由的配置</li>
+<li>upstream：用于进行负载均衡的配置<h2 id="3-Nginxd的启动和停止"><a href="#3-Nginxd的启动和停止" class="headerlink" title="3. Nginxd的启动和停止"></a>3. Nginxd的启动和停止</h2></li>
+</ol>
+<h3 id="启动"><a href="#启动" class="headerlink" title="启动"></a>启动</h3><p> 直接执行nginx会按照默认的配置文件进行服务器的启动<br> <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ nginx</span><br></pre></td></tr></table></figure></p>
+<h3 id="停止"><a href="#停止" class="headerlink" title="停止"></a>停止</h3> <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ nginx -s stop</span><br><span class="line">or</span><br><span class="line">$ nginx -s quit</span><br></pre></td></tr></table></figure>
+<h3 id="重新启动加载"><a href="#重新启动加载" class="headerlink" title="重新启动加载"></a>重新启动加载</h3><p>同样也可以使用命令reopen和reload来重新启动nginx或者重新加载配合着文件。</p>
+
+          
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://s1ark.cn/2017/04/01/11/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="狗子">
@@ -472,7 +648,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2016/09/03/6/">
+    <link itemprop="mainEntityOfPage" href="http://s1ark.cn/2016/09/03/6/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="狗子">
@@ -627,7 +803,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2016/08/23/5/">
+    <link itemprop="mainEntityOfPage" href="http://s1ark.cn/2016/08/23/5/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="狗子">
@@ -795,7 +971,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2016/08/02/4/">
+    <link itemprop="mainEntityOfPage" href="http://s1ark.cn/2016/08/02/4/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="狗子">
@@ -953,7 +1129,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2016/07/25/2/">
+    <link itemprop="mainEntityOfPage" href="http://s1ark.cn/2016/07/25/2/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="狗子">
@@ -1107,7 +1283,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2016/06/25/3/">
+    <link itemprop="mainEntityOfPage" href="http://s1ark.cn/2016/06/25/3/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="狗子">
@@ -1267,7 +1443,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2016/05/15/8/">
+    <link itemprop="mainEntityOfPage" href="http://s1ark.cn/2016/05/15/8/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="狗子">
@@ -1434,7 +1610,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2016/03/23/7/">
+    <link itemprop="mainEntityOfPage" href="http://s1ark.cn/2016/03/23/7/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="狗子">
@@ -1588,7 +1764,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2016/03/17/9/">
+    <link itemprop="mainEntityOfPage" href="http://s1ark.cn/2016/03/17/9/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="狗子">
@@ -1732,162 +1908,6 @@
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2016/03/01/10/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="狗子">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Souven1r">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2016/03/01/10/" itemprop="url">Python字符串处理</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2016-03-01T00:00:00+08:00">2016-03-01</time>
-            
-
-            
-            
-
-            
-          </span>
-
-          
-            <span class="post-category" >
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/技术/" itemprop="url" rel="index"><span itemprop="name">技术</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-              <span class="post-comments-count">
-                <span class="post-meta-divider">|</span>
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-comment-o"></i>
-                </span>
-                <a href="/2016/03/01/10/#comments" itemprop="discussionUrl">
-                  <span class="post-comments-count valine-comment-count" data-xid="/2016/03/01/10/" itemprop="commentCount"></span>
-                </a>
-              </span>
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h1 id="Python去掉字符串中的空格"><a href="#Python去掉字符串中的空格" class="headerlink" title="Python去掉字符串中的空格"></a>Python去掉字符串中的空格</h1><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">s = <span class="string">'  111    '</span></span><br><span class="line"><span class="comment">#去掉左边的空格</span></span><br><span class="line">s.lstrip()</span><br><span class="line">&gt;&gt;<span class="string">'111   '</span></span><br><span class="line"><span class="comment">#去掉右边的空格</span></span><br><span class="line">s.rstrip()</span><br><span class="line">&gt;&gt;<span class="string">'    111'</span></span><br><span class="line"><span class="comment">#去掉两边所有空格</span></span><br><span class="line">s.strip()</span><br><span class="line">&gt;&gt;<span class="string">'111'</span></span><br></pre></td></tr></table></figure>
-<p>但是上述方法只能去掉两边的空格<br>去中间的空格只能先分割，再加入<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">s = <span class="string">' 11 22 33  45543 12 '</span></span><br><span class="line">x = s.split(<span class="string">' '</span>)</span><br><span class="line">y = <span class="string">''</span>.join(x)</span><br></pre></td></tr></table></figure></p>
-
-          
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -1941,7 +1961,7 @@
                 
                   <a href="/archives">
                 
-                    <span class="site-state-item-count">11</span>
+                    <span class="site-state-item-count">12</span>
                     <span class="site-state-item-name">日志</span>
                   </a>
                 </div>
@@ -1977,7 +1997,9 @@
                     
                       
                     
-                    <span class="site-state-item-count">4</span>
+                      
+                    
+                    <span class="site-state-item-count">5</span>
                     <span class="site-state-item-name">标签</span>
                   </a>
                 </div>
@@ -2050,7 +2072,7 @@
   <span class="with-love">
     <i class="fa fa-love"></i>
   </span>
-  <span class="author" itemprop="copyrightHolder">S1ark  Souvenir</span>
+  <span class="author" itemprop="copyrightHolder">S1ark  &  Souvenir</span>
 
   
 

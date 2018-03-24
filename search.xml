@@ -1,6 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
+    <title><![CDATA[Ubuntu下部署 Nginx + Gunicorn + Django(1)]]></title>
+    <url>%2F2018%2F03%2F24%2F13%2F</url>
+    <content type="text"><![CDATA[Nginx1. Ubuntu下Nginx安装按照正常软件的安装方式，直接通过如下命令进行安装：1$ sudo apt-get install nginx 安装完成即可，在/usr/sbin/目录下是nginx命令所在目录，在/etc/nginx/目录下是nginx所有的配置文件，用于配置nginx服务器以及负载均衡等信息 2. 配置Nginx查看nginx进程是否启动1$ ps -ef|grep nginx nginx会自动根据当前主机的CPU的内核数目创建对应的进程数量 备注：nginx进程在启动的时候，会附带一个守护进程，用于保护正式进程不被异常终止；如果守护进程一旦返现nginx继承被终止了，会自动重启该进程。 守护进程一般会称为master进程，业务进程被称为worker进程 nginx是一个功能非常强大的web服务器加反向代理服务器，同时又是邮件服务器等等 在项目使用中，使用最多的三个核心功能是反向代理、负载均衡和静态服务器 这三个不同的功能的使用，都跟nginx的配置密切相关，nginx服务器的配置信息主要集中在nginx.conf这个配置文件中，并且所有的可配置选项大致分为以下几个部分 123456789101112131415161718192021222324252627282930313233343536main # 全局配置events &#123; # nginx工作模式配置&#125;http &#123; # http设置 .... server &#123; # 服务器主机配置 .... location &#123; # 路由配置 .... &#125; location path &#123; .... &#125; location otherpath &#123; .... &#125; &#125; server &#123; .... location &#123; .... &#125; &#125; upstream name &#123; # 负载均衡配置 .... &#125;&#125; 如上述配置文件所示，主要由6个部分组成： main：用于进行nginx全局信息的配置 events：用于nginx工作模式的配置 http：用于进行http协议信息的一些配置 server：用于进行服务器访问信息的配置 location：用于进行访问路由的配置 upstream：用于进行负载均衡的配置3. Nginxd的启动和停止 启动 直接执行nginx会按照默认的配置文件进行服务器的启动 1$ nginx 停止 123$ nginx -s stopor$ nginx -s quit 重新启动加载同样也可以使用命令reopen和reload来重新启动nginx或者重新加载配合着文件。]]></content>
+      <categories>
+        <category>技术</category>
+      </categories>
+      <tags>
+        <tag>运维</tag>
+      </tags>
+  </entry>
+  <entry>
     <title><![CDATA[PIP 批量更新脚本]]></title>
     <url>%2F2017%2F04%2F01%2F11%2F</url>
     <content type="text"><![CDATA[PIP是不支持自动批量更新的，但是总得想办法嘛12345import pipfrom subprocess import call for dist in pip.get_installed_distributions(): call("pip install --upgrade " + dist.project_name, shell=True)]]></content>
