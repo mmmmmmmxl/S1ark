@@ -1,6 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
+    <title><![CDATA[Ubuntu下部署 Nginx + Gunicorn + Django(2)]]></title>
+    <url>%2F2018%2F03%2F25%2F14%2F</url>
+    <content type="text"><![CDATA[Gunicorn版本Gunicorn 19 1. Gunicorn的安装1$ pip install gunicorn 由于我们在服务端大多数时候采用异步模式，所以我们还需要安装异步库123$ pip install greenlet # Required for both$ pip install eventlet # For eventlet workers$ pip install gevent # For gevent workers 2. Gunicorn的配置Gunicorn是基于pre-fork（预启动，提前fork）的工作模式。这就意味着Gunicorn是由一个主进程来管理这些worker进程的。主进程不会知道那些客户端的任何事情，所有的请求和响应都是由worker进程来处理。 Master主进程要做的就是监听各种子进程的信号和做出相应动作，它通过监听信号，如TTIN，TTOU，CHLD来管理这些运行中的worker。TTIN和TTOU信号告诉主信号去增加或减少运行worker的数量。CHLD则是表明了一个子程序被终止了，这个时候主程序就会自动重启这个失败掉的worker。 Sync Workers默认的worker工作模式就是同步worker，一次只能处理一个请求。这个模式是最简单的，因为无论出现任何错误，都只会影响那一个请求。 Async Workers异步worker模式是基于Greenlets（通过Eventlet和Gevent实现）。Greenlets是由python的多线程协作实现的。一般情况下，我们的应用可以直接使用这个worker模式而不需要做其他事情。 Tornado WorkersGunicorn也支持Tornado worker模式，你还可以用Tornado的框架来写相应的应用。不过尽管Tornado worker能够用来处理WSGI应用，但文档并不推荐使用这个模式。 AsyncIO Workers这个模式是兼容python3的，有两种worker。 gthread模式是线程worker，它从主循环中接收连接，将这个连接作为一个任务放到线程池中。在长连接的情况下，连接会被放在循环中等待事件的发生，如果长连接超时还没有事件发生的话，连接会被关闭。 gaiohttp就是直接用aiohttp这个库。（仅支持python3） 3. 选择一个合适的Gunicorn工作模式默认的同步工作模式是假设你的应用是受到CPU和网络带宽的限制，一般情况下，就是说你的应用不会处理大量不可预见的访问。举个例子，假如你的应用突然收到很多请求，那么有可能会有很多连接堆积在服务器上，从而导致一些对外服务失效。在这种情况下，异步工作模式会更好一些。 文档解释推荐设置一个缓存代理在Gunicorn前面的主要原因，是因为假设了硬件资源不足。如果直接将这些暴露到网络中，dos攻击就会笑出声。文档推荐了用Hey来做负载测试。 以下行为要求异步模式 应用中有长阻塞 面向网络的服务请求（个人理解为就是API） 流请求和流响应 长时间轮询 网络套接字 Comet 4. 使用配置文件来启动Gunicorn使用如下命令启动即可加载配置文件1gunicorn -c yourconf.conf app.wsgi 12345bind = &apos;0.0.0.0:8000&apos;workers = 4backlog = 2048worker_class = &quot;gevent&quot;Debug = True]]></content>
+      <categories>
+        <category>技术</category>
+      </categories>
+      <tags>
+        <tag>运维</tag>
+      </tags>
+  </entry>
+  <entry>
     <title><![CDATA[Ubuntu下部署 Nginx + Gunicorn + Django(1)]]></title>
     <url>%2F2018%2F03%2F24%2F13%2F</url>
     <content type="text"><![CDATA[Nginx1. Ubuntu下Nginx安装按照正常软件的安装方式，直接通过如下命令进行安装：1$ sudo apt-get install nginx 安装完成即可，在/usr/sbin/目录下是nginx命令所在目录，在/etc/nginx/目录下是nginx所有的配置文件，用于配置nginx服务器以及负载均衡等信息 2. 配置Nginx查看nginx进程是否启动1$ ps -ef|grep nginx nginx会自动根据当前主机的CPU的内核数目创建对应的进程数量 备注：nginx进程在启动的时候，会附带一个守护进程，用于保护正式进程不被异常终止；如果守护进程一旦返现nginx继承被终止了，会自动重启该进程。 守护进程一般会称为master进程，业务进程被称为worker进程 nginx是一个功能非常强大的web服务器加反向代理服务器，同时又是邮件服务器等等 在项目使用中，使用最多的三个核心功能是反向代理、负载均衡和静态服务器 这三个不同的功能的使用，都跟nginx的配置密切相关，nginx服务器的配置信息主要集中在nginx.conf这个配置文件中，并且所有的可配置选项大致分为以下几个部分 123456789101112131415161718192021222324252627282930313233343536main # 全局配置events &#123; # nginx工作模式配置&#125;http &#123; # http设置 .... server &#123; # 服务器主机配置 .... location &#123; # 路由配置 .... &#125; location path &#123; .... &#125; location otherpath &#123; .... &#125; &#125; server &#123; .... location &#123; .... &#125; &#125; upstream name &#123; # 负载均衡配置 .... &#125;&#125; 如上述配置文件所示，主要由6个部分组成： main：用于进行nginx全局信息的配置 events：用于nginx工作模式的配置 http：用于进行http协议信息的一些配置 server：用于进行服务器访问信息的配置 location：用于进行访问路由的配置 upstream：用于进行负载均衡的配置3. Nginxd的启动和停止 启动 直接执行nginx会按照默认的配置文件进行服务器的启动 1$ nginx 停止 123$ nginx -s stopor$ nginx -s quit 重新启动加载同样也可以使用命令reopen和reload来重新启动nginx或者重新加载配合着文件。]]></content>
