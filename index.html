@@ -318,6 +318,205 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://s1ark.cn/2018/04/10/15/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="狗子">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Souven1r">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/04/10/15/" itemprop="url">Python 如何传递运算表达式</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-04-10T20:29:00+08:00">2018-04-10</time>
+            
+
+            
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/技术/" itemprop="url" rel="index"><span itemprop="name">技术</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2018/04/10/15/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count valine-comment-count" data-xid="/2018/04/10/15/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p>首先要说明的一下，所描述的是 Python 中的 运算表达式 的部分，不是 Python 表达式的部分。</p>
+<p>关于什么是 Python 中的运算表达式，可以参考 <a href="https://docs.python.org/3/library/operator.html#mapping-operators-to-functions" target="_blank" rel="noopener">Python 文档 10.3.1. Mapping Operators to Functions</a> 部分，所需要传递的就是这部分运算表达式。</p>
+<h1 id="一个简单的问题"><a href="#一个简单的问题" class="headerlink" title="一个简单的问题"></a>一个简单的问题</h1><p>题目如下:</p>
+<blockquote>
+<p>给定一个实数列表和区间，找出区间部分。</p>
+</blockquote>
+<p>这个问题中有 2 个变量，一个是实数列表，一个区间。其中区间包含几种情况：</p>
+<ul>
+<li>左开右开</li>
+<li>左开右闭</li>
+<li>左闭右开</li>
+<li>左开右开</li>
+</ul>
+<p>由于区间存在多种情况，无法通过一种固定的形式去描述这个区间。</p>
+<p>假设左边界是 a，右边界是 b，列表中某个变量是 x，那么转换成区间关系就是：</p>
+<ul>
+<li>(a, b)：a &lt; x &lt; b</li>
+<li>(a, b]：a &lt; x &lt;= b</li>
+<li>[a, b)：a &lt;= x &lt; b</li>
+<li>[a, b]：a &lt;= x &lt;=b</li>
+</ul>
+<p>那么如何使用一种优雅的方式获取这种运算关系，就是要解决的一个问题。</p>
+<h1 id="典型的应用"><a href="#典型的应用" class="headerlink" title="典型的应用"></a>典型的应用</h1><p>传递运算表达式在 Python 中最典型的应用在 ORM 上。</p>
+<p>Python 调用关系型数据库基本上都是通过 Database API 来实现的，查询数据依赖于 SQL，ORM 最大方便之一就是能生成查询所用的 SQL。</p>
+<p>非关系型数据库中有的 query 语句也支持条件查询，比如 AWS 的 Dynamodb。那么如何通过 ORM 来生成 query 语句也是一直重要的地方。</p>
+<p>在 peewee 文档的 Query operators 中可以看到这个 ORM 支持常用的操作符来表示字段和字段之间的关系。</p>
+<blockquote>
+<p>文档中还用通过函数来表达关系，他们实质上是一样的，但是这个不在讨论范围之类</p>
+</blockquote>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="comment"># Find the user whose username is "charlie".</span></span><br><span class="line">User.select().where(User.username == <span class="string">'charlie'</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># Find the users whose username is in [charlie, huey, mickey]</span></span><br><span class="line">User.select().where(User.username &lt;&lt; [<span class="string">'charlie'</span>, <span class="string">'huey'</span>, <span class="string">'mickey'</span>])</span><br></pre></td></tr></table></figure>
+<p>从上面代码中可以看出用 == 来表示相等，用 &lt;&lt; 表示 IN。</p>
+<h1 id="解决方案"><a href="#解决方案" class="headerlink" title="解决方案"></a>解决方案</h1><p>中心思想非常简单：存储还原操作符与参数</p>
+<p>Python 所支持的操作符都可以通过重写魔法方法来重新实现逻辑，所以在魔法方法中已经可以拿到操作符和参数。</p>
+<blockquote>
+<p>一元操作符和二元操作符都是如此。</p>
+</blockquote>
+<p>所以，最开始那个问题可以分为两个步骤来完成。</p>
+<p>第一步，存储操作符和参数，可以采用一个类重写相关操作符完成。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Expression</span>:</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__eq__</span><span class="params">(self, other)</span>:</span></span><br><span class="line">        <span class="keyword">return</span> Operator(<span class="string">'=='</span>, other)</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__lt__</span><span class="params">(self, other)</span>:</span></span><br><span class="line">        <span class="keyword">return</span> Operator(<span class="string">'&lt;'</span>, other)</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__le__</span><span class="params">(self, other)</span>:</span></span><br><span class="line">        <span class="keyword">return</span> Operator(<span class="string">'&lt;='</span>, other)</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__gt__</span><span class="params">(self, other)</span>:</span></span><br><span class="line">        <span class="keyword">return</span> Operator(<span class="string">'&gt;'</span>, other)</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__ge__</span><span class="params">(self, other)</span>:</span></span><br><span class="line">        <span class="keyword">return</span> Operator(<span class="string">'&gt;='</span>, other)</span><br></pre></td></tr></table></figure>
+<p>第二步，还原操作符和参数。在 Operator 类中完成从操作符转化为函数的过程。<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> operator</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Operator</span>:</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self, operator_, rhs)</span>:</span></span><br><span class="line">        self._operator = operator_</span><br><span class="line">        self._rhs = rhs </span><br><span class="line">        self._operator_map = &#123;</span><br><span class="line">            <span class="string">'=='</span>: operator.eq,</span><br><span class="line">            <span class="string">'&lt;'</span>: operator.lt,</span><br><span class="line">            <span class="string">'&lt;='</span>: operator.le,</span><br><span class="line">            <span class="string">'&gt;'</span>: operator.gt,</span><br><span class="line">            <span class="string">'&gt;='</span>: operator.ge</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">    @property</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">value</span><span class="params">(self)</span>:</span></span><br><span class="line">        <span class="keyword">return</span> self._rhs </span><br><span class="line"></span><br><span class="line"><span class="meta">    @property</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">operator</span><span class="params">(self)</span>:</span></span><br><span class="line">        <span class="keyword">return</span> self._operator_map[self._operator]</span><br></pre></td></tr></table></figure></p>
+<p>一个 Operator 的实例就是一个运算表达式，可以自己定义操作符和函数的关系，来完成一些特殊的操作。</p>
+<p>所以，有了 Expression 和 Operator，就能很优雅地解出最开始问题的答案<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">pick_range</span><span class="params">(data, left_exp, right_exp)</span>:</span></span><br><span class="line">    lvalue = left_exp.value</span><br><span class="line">    rvalue = right_exp.value</span><br><span class="line"></span><br><span class="line">    loperator = left_exp.operator</span><br><span class="line">    roperator = right_exp.operator</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> [item <span class="keyword">for</span> item <span class="keyword">in</span> data <span class="keyword">if</span> loperator(item, lvalue) <span class="keyword">and</span> roperator(item, rvalue)]</span><br></pre></td></tr></table></figure></p>
+<p>最后来几个测试用例<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&gt;&gt;&gt; </span>exp = Expression()</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>data = [<span class="number">1</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>, <span class="number">6</span>, <span class="number">8</span>, <span class="number">9</span>]</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>pick_range(data, <span class="number">1</span> &lt; exp, exp &lt; <span class="number">6</span>)</span><br><span class="line">[<span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>]</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>pick_range(data, <span class="number">1</span> &lt;= exp, exp &lt; <span class="number">6</span>)</span><br><span class="line">[<span class="number">1</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>]</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>pick_range(data, <span class="number">1</span> &lt; exp, exp &lt;= <span class="number">6</span>)</span><br><span class="line">[<span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>, <span class="number">6</span>]</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>pick_range(data, <span class="number">1</span> &lt;= exp, exp &lt;= <span class="number">6</span>)</span><br><span class="line">[<span class="number">1</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>, <span class="number">6</span>]</span><br><span class="line">&gt;&gt;&gt;</span><br></pre></td></tr></table></figure></p>
+<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><p>关于传递运算表达式，知道的人会觉得简单，不知道的人一时间摸不着头脑。</p>
+<p>Python 强大神秘，简约的逻辑中总是有复杂的背后支持，深入 Python 才能明白 Python 之美。</p>
+
+          
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://s1ark.cn/2018/03/25/14/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1772,160 +1971,6 @@
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://s1ark.cn/2016/03/23/7/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="狗子">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Souven1r">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2016/03/23/7/" itemprop="url">Python冒泡排序</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2016-03-23T00:00:00+08:00">2016-03-23</time>
-            
-
-            
-            
-
-            
-          </span>
-
-          
-            <span class="post-category" >
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/技术/" itemprop="url" rel="index"><span itemprop="name">技术</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-              <span class="post-comments-count">
-                <span class="post-meta-divider">|</span>
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-comment-o"></i>
-                </span>
-                <a href="/2016/03/23/7/#comments" itemprop="discussionUrl">
-                  <span class="post-comments-count valine-comment-count" data-xid="/2016/03/23/7/" itemprop="commentCount"></span>
-                </a>
-              </span>
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h1 id="Python冒泡排序的实现（有sort在似乎根本没什么必要？"><a href="#Python冒泡排序的实现（有sort在似乎根本没什么必要？" class="headerlink" title="Python冒泡排序的实现（有sort在似乎根本没什么必要？"></a>Python冒泡排序的实现（有sort在似乎根本没什么必要？</h1><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">array = [1,3,5,4,2]</span><br><span class="line">for i in range(len(array))[::-1]:</span><br><span class="line">    for j in range(i):</span><br><span class="line">	if array[j] &gt; array[j+1]:</span><br><span class="line">	    array[j],array[j+1] = array[j+1],array[j]</span><br></pre></td></tr></table></figure>
-          
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -1979,7 +2024,7 @@
                 
                   <a href="/archives">
                 
-                    <span class="site-state-item-count">13</span>
+                    <span class="site-state-item-count">14</span>
                     <span class="site-state-item-name">日志</span>
                   </a>
                 </div>
@@ -2017,7 +2062,9 @@
                     
                       
                     
-                    <span class="site-state-item-count">5</span>
+                      
+                    
+                    <span class="site-state-item-count">6</span>
                     <span class="site-state-item-name">标签</span>
                   </a>
                 </div>
